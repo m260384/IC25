@@ -1,0 +1,218 @@
+---
+title: "Infochallengegraphs"
+output: html_document
+---
+
+
+NBA games graph
+```{r}
+train_data <- read_csv("Total Entries and Exits_data.csv") %>%
+  rename(Date = `Day of Date`, Exits = MeasureValues) %>%
+  mutate(Date = mdy(Date))
+
+nba_data <- read_csv("mergedNBA.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d %H:%M:%S"))
+
+merged_data <- train_data %>%
+  left_join(nba_data, by = "Date") %>%
+  mutate(Game_Day = ifelse(!is.na(Location), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(
+    Avg_Exits = mean(Exits, na.rm = TRUE),
+    Count = n()
+  )
+
+print(summary_stats)
+
+ggplot(merged_data, aes(x = Game_Day, y = Exits, fill = Game_Day)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = label_comma()) +  
+  labs(title = "Train Station Exits on Wizard's Game Days vs. Non-Game Days",
+       y = "Number of Exits") +
+  theme_minimal()
+```
+
+
+NHL games graph
+```{r}
+library(tidyverse)
+library(lubridate)
+library(scales)
+
+train_data <- read_csv("Total Entries and Exits_data.csv") %>%
+  rename(Date = `Day of Date`, Exits = `MeasureValues`) %>%
+  mutate(Date = mdy(Date))  
+
+nhl_data <- read_csv("mergedNHL.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d %H:%M:%S"))
+
+merged_data <- train_data %>%
+  left_join(nhl_data, by = "Date") %>%
+  mutate(Game_Day = if_else(!is.na(Location), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(Average_Exits = mean(Exits, na.rm = TRUE))
+
+print(summary_stats)
+
+ggplot(merged_data, aes(x = Game_Day, y = Exits, fill = Game_Day)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = label_comma()) +  
+  labs(
+    title = "Train Station Exits on Capitals Game Days vs. Non-Game Days",
+    y = "Number of Exits",
+    x = "Game Day"
+  ) +
+  theme_minimal()
+
+```
+
+
+Baseball graph
+```{r}
+library(tidyverse)
+library(lubridate)
+library(scales)
+
+metro <- read_csv("Total Entries and Exits_data.csv") %>%
+  rename(Date = `Day of Date`, Exits = `MeasureValues`) %>%
+  mutate(Date = mdy(Date))  
+
+nationals_games <- read_csv("NationalsPark.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d %H:%M:%S")) 
+
+metro_2024 <- metro %>%
+  filter(year(Date) == 2024)
+
+merged_data <- metro_2024 %>%
+  left_join(nationals_games, by = "Date") %>%
+  mutate(Game_Day = if_else(!is.na(Location), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(Average_Exits = mean(Exits, na.rm = TRUE))
+
+print(summary_stats)
+
+ggplot(merged_data, aes(x = Game_Day, y = Exits, fill = Game_Day)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = label_comma()) +  
+  labs(
+    title = "Metro Exits on Nationals Game Days vs. Non-Game Days",
+    y = "Number of Exits",
+    x = "Game Day"
+  ) +
+  theme_minimal()
+
+```
+
+
+Commanders Exits by train station
+```{r}
+
+library(tidyverse)
+library(lubridate)
+
+metro_data <- read_csv("commadersexits.csv") %>%
+  rename(Date = `Day of Date`, Exits = `Measure Values`) %>%
+  mutate(Date = mdy(Date))  
+
+com_games <- read_csv("commanders.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d")) 
+
+merged_data <- metro_data %>%
+  left_join(com_games, by = "Date") %>%
+  mutate(Game_Day = if_else(!is.na(Opponent), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(Average_Exits = mean(Exits, na.rm = TRUE))
+
+print(summary_stats)
+
+ggplot(summary_stats, aes(x = Game_Day, y = Average_Exits, fill = Game_Day)) +
+  geom_col() +
+  scale_y_continuous(labels = label_comma()) +
+  labs(
+    title = "Average Exits on Commanders Game Days vs. Non-Game Days",
+    x = "Game Day",
+    y = "Average Number of Exits"
+  ) +
+  theme_minimal()
+
+
+```
+
+Caps exits
+
+```{r}
+library(tidyverse)
+library(lubridate)
+
+metro_data <- read_csv("capsexit.csv") %>%
+  rename(Date = `Day of Date`, Exits = `Measure Values`) %>%
+  mutate(Date = mdy(Date)) 
+
+caps_games <- read_csv("mergedNHL.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d"))  
+
+merged_data <- metro_data %>%
+  left_join(caps_games, by = "Date") %>%
+  mutate(Game_Day = if_else(!is.na(`Away Team`), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(Average_Exits = mean(Exits, na.rm = TRUE))
+print(summary_stats)
+
+ggplot(summary_stats, aes(x = Game_Day, y = Average_Exits, fill = Game_Day)) +
+  geom_col() +
+  scale_y_continuous(labels = label_comma()) +  # Format y-axis with commas
+  labs(
+    title = "Average Exits on Capitals Game Days vs. Non-Game Days",
+    x = "Game Day",
+    y = "Average Number of Exits"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+Nationals exit 
+```{r}
+library(tidyverse)
+library(lubridate)
+
+metro_data <- read_csv("nationalsexit.csv") %>%
+  rename(Date = `Day of Date`, Exits = `Measure Values`) %>%
+  mutate(Date = mdy(Date)) 
+
+nationals_games <- read_csv("NationalsPark.csv") %>%
+  mutate(Date = as.Date(Date, format="%Y-%m-%d")) 
+
+merged_data <- metro_data %>%
+  left_join(nationals_games, by = "Date") %>%
+  mutate(Game_Day = if_else(!is.na(`Away Team`), "Game Day", "No Game"))
+
+summary_stats <- merged_data %>%
+  group_by(Game_Day) %>%
+  summarise(Average_Exits = mean(Exits, na.rm = TRUE))
+
+print(summary_stats)
+
+ggplot(summary_stats, aes(x = Game_Day, y = Average_Exits, fill = Game_Day)) +
+  geom_col() +
+  scale_y_continuous(labels = label_comma()) +
+  labs(
+    title = "Average Exits on Nationals Game Days vs. Non-Game Days",
+    x = "Game Day",
+    y = "Average Number of Exits"
+  ) +
+  theme_minimal()
+
+```
+
